@@ -4,12 +4,13 @@
 1. [システム要件とRTX 5090の確認](#1-システム要件とrtx-5090の確認)
 2. [WSL2のインストール（5分）](#2-wsl2のインストール5分)
 3. [Docker Desktopのインストール（10分）](#3-docker-desktopのインストール10分)
-4. [Docker ComposeでOllama＋OpenWebUIを一括起動（5分）](#4-docker-composeでollamaopenwebuiを一括起動5分)
-5. [gpt-oss-20bモデルの導入（WebUI上で完結）](#5-gpt-oss-20bモデルの導入webui上で完結)
-6. [日本語RAG用ruri-v3の設定（WebUI上で完結）](#6-日本語rag用ruri-v3の設定webui上で完結)
-7. [Windows起動時の自動起動設定（5分）](#7-windows起動時の自動起動設定5分)
-8. [動作確認](#8-動作確認)
-9. [トラブルシューティング](#9-トラブルシューティング)
+4. [NVIDIA Container Toolkitの設定（5分）](#4-nvidia-container-toolkitの設定5分)
+5. [Docker ComposeでOllama＋OpenWebUIを一括起動（5分）](#5-docker-composeでollamaopenwebuiを一括起動5分)
+6. [gpt-oss-20bモデルの導入（WebUI上で完結）](#6-gpt-oss-20bモデルの導入webui上で完結)
+7. [日本語RAG用ruri-v3の設定（WebUI上で完結）](#7-日本語rag用ruri-v3の設定webui上で完結)
+8. [Windows起動時の自動起動設定（5分）](#8-windows起動時の自動起動設定5分)
+9. [動作確認](#9-動作確認)
+10. [トラブルシューティング](#10-トラブルシューティング)
 
 ---
 
@@ -76,7 +77,56 @@ wsl --install
 
 ---
 
-## 4. Docker ComposeでOllama＋OpenWebUIを一括起動（5分）
+## 4. NVIDIA Container Toolkitの設定（5分）
+
+### 🎮 GPUをDockerで使用可能にする（必須）
+
+この手順により、DockerコンテナからRTX 5090を使用できるようになります。
+
+1. **WSL2のUbuntuを開く**
+   - Windowsスタートメニューから「Ubuntu」を起動
+
+2. **NVIDIA Container Toolkitのインストール**
+   
+   以下のコマンドを順番に実行：
+
+```bash
+# GPGキーの追加
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+
+# リポジトリの追加
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+  sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+  sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
+# パッケージリストの更新
+sudo apt-get update
+
+# NVIDIA Container Toolkitのインストール
+sudo apt-get install -y nvidia-container-toolkit
+
+# Docker daemonの設定
+sudo nvidia-ctk runtime configure --runtime=docker
+```
+
+3. **Docker Desktopの再起動**
+   - システムトレイのDockerアイコンを右クリック
+   - 「Quit Docker Desktop」をクリック
+   - デスクトップのDocker Desktopアイコンから再起動
+
+4. **GPU認識の確認**
+   
+   WSL2のUbuntuで以下を実行：
+```bash
+# GPUが正しく認識されているか確認
+docker run --rm --gpus all nvidia/cuda:12.0-base-ubuntu22.04 nvidia-smi
+```
+   
+   RTX 5090の情報が表示されればOK！表示されない場合は、トラブルシューティングを参照。
+
+---
+
+## 5. Docker ComposeでOllama＋OpenWebUIを一括起動（5分）
 
 ### 📦 セットアップファイルの作成
 
@@ -149,7 +199,7 @@ volumes:
 
 ---
 
-## 5. gpt-oss-20bモデルの導入（WebUI上で完結）
+## 6. gpt-oss-20bモデルの導入（WebUI上で完結）
 
 ### 🤖 ブラウザ上で簡単インストール
 
@@ -171,7 +221,7 @@ volumes:
 
 ---
 
-## 6. 日本語RAG用ruri-v3の設定（WebUI上で完結）
+## 7. 日本語RAG用ruri-v3の設定（WebUI上で完結）
 
 ### 🗾 日本語埋め込みモデルの導入
 
@@ -211,7 +261,7 @@ volumes:
 
 ---
 
-## 7. Windows起動時の自動起動設定（5分）
+## 8. Windows起動時の自動起動設定（5分）
 
 ### 🚀 完全自動化の設定
 
@@ -266,7 +316,7 @@ pause
 
 ---
 
-## 8. 動作確認
+## 9. 動作確認
 
 ### ✅ サービスの確認
 
@@ -276,16 +326,24 @@ pause
    ```
    → ollama と open-webui の2つのコンテナが「Up」状態
 
-2. **OpenWebUIアクセス**
+2. **GPU使用状況の確認**
+   ```powershell
+   # WSL2で実行
+   wsl
+   docker exec ollama nvidia-smi
+   ```
+   → RTX 5090のメモリ使用状況が表示される
+
+3. **OpenWebUIアクセス**
    - http://localhost:3000
    - ログインして動作確認
 
-3. **gpt-oss-20bのテスト**
+4. **gpt-oss-20bのテスト**
    - モデル選択で「gpt-oss:20b」を選択
    - 「こんにちは、日本語で答えてください」と入力
    - 応答を確認
 
-4. **RAGのテスト**
+5. **RAGのテスト**
    - PDFをアップロード
    - 「#」を付けて文書を選択
    - 文書に関する質問をする
@@ -297,7 +355,7 @@ pause
 
 ---
 
-## 9. トラブルシューティング
+## 10. トラブルシューティング
 
 ### ❗ よくある問題と解決方法
 
@@ -315,13 +373,26 @@ wsl nvidia-smi
 
 # 表示されない場合、WSL2カーネルを更新
 wsl --update --pre-release
+
+# NVIDIA Container Toolkitの再インストール（WSL2内）
+sudo apt-get remove nvidia-container-toolkit
+sudo apt-get install nvidia-container-toolkit
+sudo nvidia-ctk runtime configure --runtime=docker
+
+# Docker Desktopを再起動
 ```
 
-#### 問題3：モデルのダウンロードが遅い
+#### 問題3：「docker: Error response from daemon: could not select device driver "" with capabilities: [[gpu]]」
+これはNVIDIA Container Toolkitが正しくインストールされていない場合に発生します。
+- セクション4の手順を再実行
+- Docker Desktopを完全に終了して再起動
+- 必要に応じてPCを再起動
+
+#### 問題4：モデルのダウンロードが遅い
 - ネットワーク速度を確認
 - Docker Desktop → Settings → Resources → Network でプロキシ設定を確認
 
-#### 問題4：メモリ不足エラー
+#### 問題5：メモリ不足エラー
 ```powershell
 # WSL2のメモリ制限を増やす
 notepad $env:USERPROFILE\.wslconfig
@@ -331,13 +402,14 @@ notepad $env:USERPROFILE\.wslconfig
 [wsl2]
 memory=48GB
 processors=16
+localhostForwarding=true
 ```
 その後：
 ```powershell
 wsl --shutdown
 ```
 
-#### 問題5：自動起動が動作しない
+#### 問題6：自動起動が動作しない
 - タスクスケジューラで「前回の実行結果」を確認
 - Docker Desktopが起動しているか確認
 - 遅延時間を60秒に増やす
@@ -352,6 +424,22 @@ docker logs open-webui
 
 # リアルタイム監視
 docker logs -f open-webui
+
+# GPU使用状況のリアルタイム監視（WSL2内）
+watch -n 1 docker exec ollama nvidia-smi
+```
+
+### 🛠️ 完全リセット方法
+問題が解決しない場合の最終手段：
+```powershell
+# すべてのコンテナとボリュームを削除
+docker compose down -v
+
+# Dockerイメージの削除
+docker rmi ollama/ollama ghcr.io/open-webui/open-webui:main
+
+# 再度起動
+docker compose up -d
 ```
 
 ---
@@ -362,6 +450,7 @@ docker logs -f open-webui
 
 ### 主な利点
 - **CLI操作最小限**：ほぼすべてWebUI上で操作
+- **GPU完全対応**：RTX 5090の性能をフル活用
 - **自動起動**：Windows起動時に全サービスが自動起動
 - **簡単管理**：Docker Desktopで視覚的に管理
 - **日本語対応**：ruri-v3による高精度な日本語RAG
@@ -370,9 +459,10 @@ docker logs -f open-webui
 1. 他のモデルの追加（llama3.2、mistral等）
 2. カスタムプロンプトの作成
 3. API経由での外部連携
+4. マルチモデル比較による最適化
 
 ### 参考リンク
 - [OpenWebUI公式ドキュメント](https://docs.openwebui.com/)
 - [Ollama公式サイト](https://ollama.com/)
-- [gpt-oss GitHubリポジトリ](https://github.com/openai/gpt-oss)
+- [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
