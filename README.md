@@ -188,8 +188,8 @@ volumes:
 4. **サービスの起動**
    - PowerShellでフォルダに移動：
    ```powershell
-   cd Desktop\ai-setup
-   docker compose up -d
+   cd OneDrive\Desktop\ai-setup
+   docker-compose up -d
    ```
 
 5. **初回セットアップ（3分待機後）**
