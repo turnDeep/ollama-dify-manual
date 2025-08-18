@@ -119,7 +119,7 @@ sudo nvidia-ctk runtime configure --runtime=docker
    WSL2のUbuntuで以下を実行：
 ```bash
 # GPUが正しく認識されているか確認
-docker run --rm --gpus all nvidia/cuda:12.0-base-ubuntu22.04 nvidia-smi
+docker run --rm --gpus all nvidia/cuda:12.4.1-base-ubuntu22.04 nvidia-smi
 ```
    
    RTX 5090の情報が表示されればOK！表示されない場合は、トラブルシューティングを参照。
