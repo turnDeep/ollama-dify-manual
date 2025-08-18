@@ -6,7 +6,7 @@
 3. [Docker Desktopのインストール（10分）](#3-docker-desktopのインストール10分)
 4. [NVIDIA Container Toolkitの設定（5分）](#4-nvidia-container-toolkitの設定5分)
 5. [Docker ComposeでOllama＋OpenWebUIを一括起動（5分）](#5-docker-composeでollamaopenwebuiを一括起動5分)
-6. [gpt-oss-20bモデルの導入（WebUI上で完結）](#6-gpt-oss-20bモデルの導入webui上で完結)
+6. [gpt-oss-20bとgemma3-27bモデルの導入（WebUI上で完結）](#6-gpt-oss-20bとgemma3-27bモデルの導入webui上で完結)
 7. [日本語RAG用ruri-v3の設定（WebUI上で完結）](#7-日本語rag用ruri-v3の設定webui上で完結)
 8. [Windows起動時の自動起動設定（5分）](#8-windows起動時の自動起動設定5分)
 9. [動作確認](#9-動作確認)
@@ -199,9 +199,11 @@ volumes:
 
 ---
 
-## 6. gpt-oss-20bモデルの導入（WebUI上で完結）
+## 6. gpt-oss-20bとgemma3-27bモデルの導入（WebUI上で完結）
 
-### 🤖 ブラウザ上で簡単インストール
+WebUIから主要なLLMを簡単に追加できます。ここでは代表的な2つのモデルを導入します。
+
+### 🤖 gpt-oss-20bの導入
 
 1. **OpenWebUIにログイン**
    - http://localhost:3000
@@ -218,6 +220,19 @@ volumes:
 
 3. **モデルの確認**
    - ダウンロード完了後、チャット画面上部のモデル選択で「gpt-oss:20b」が選択可能に
+
+### ✨ gemma3-27bの導入
+
+1. **モデルのダウンロード**
+   - 同様に「Pull a model from Ollama」の入力欄に以下を入力：
+   ```
+   gemma3:27b
+   ```
+   - 「Download」ボタンをクリック
+   - ダウンロード進捗がリアルタイムで表示されます（約16.2GB、15-20分）
+
+2. **モデルの確認**
+   - ダウンロード完了後、チャット画面上部のモデル選択で「gemma3:27b」が選択可能に
 
 ---
 
@@ -338,10 +353,9 @@ pause
    - http://localhost:3000
    - ログインして動作確認
 
-4. **gpt-oss-20bのテスト**
-   - モデル選択で「gpt-oss:20b」を選択
-   - 「こんにちは、日本語で答えてください」と入力
-   - 応答を確認
+4. **モデルのテスト**
+   - **gpt-oss-20b**: モデル選択で`gpt-oss:20b`を選択し、「こんにちは、日本語で答えてください」と入力して応答を確認。
+   - **gemma3-27b**: モデル選択で`gemma3:27b`を選択し、「日本の首都について教えてください」と入力して応答を確認。
 
 5. **RAGのテスト**
    - PDFをアップロード
@@ -349,8 +363,12 @@ pause
    - 文書に関する質問をする
 
 ### 📊 期待されるパフォーマンス（RTX 5090）
-- **gpt-oss-20b推論速度**：30-50 tokens/秒
-- **メモリ使用量**：約16GB
+
+| モデル | 推論速度 (tokens/秒) | メモリ使用量 (VRAM) |
+|---|---|---|
+| **gpt-oss:20b** | 30-50 | 約16GB |
+| **gemma3:27b** | 25-45 | 約18GB |
+
 - **起動時間**：Docker起動後約1分
 
 ---
