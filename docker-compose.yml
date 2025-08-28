@@ -19,8 +19,6 @@ services:
     environment:
       - OLLAMA_GPU_MEMORY=30g
       - OLLAMA_MAX_MEMORY=30g
-    networks:
-      - ollama-net
 
   open-webui:
     image: ghcr.io/open-webui/open-webui:main
@@ -40,13 +38,7 @@ services:
       - CUDA_VISIBLE_DEVICES=0
       - ENABLE_SIGNUP=true
     restart: always
-    networks:
-      - ollama-net
 
 volumes:
   ollama_data:
   open-webui_data:
-
-networks:
-  ollama-net:
-    external: true
